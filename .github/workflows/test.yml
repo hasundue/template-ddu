@@ -27,6 +27,7 @@ jobs:
     defaults:
       run:
         shell: bash
+        working-directory: ${{ env.REPO_PATH }}
 
     steps:
       - name: Checkout
@@ -70,7 +71,6 @@ jobs:
 
       - name: Cache dependencies
         run: git ls-files | grep -F .ts | xargs -I {} deno cache {}
-        working-directory: ${{ env.REPO_PATH }}
 
       - name: Test
         run: deno task test --coverage=./coverage
@@ -79,7 +79,6 @@ jobs:
           DENOPS_TEST_NVIM: ${{ steps.nvim.outputs.executable }}
           DENOPS_TEST_DENOPS_PATH: ${{ env.DENOPS_PATH }}
         timeout-minutes: 5
-        working-directory: ${{ env.REPO_PATH }}
 
       - name: Create coverage report
         run: deno coverage ./coverage --lcov > ./coverage.lcov
@@ -87,4 +86,4 @@ jobs:
       - name: Upload to Codecov
         uses: codecov/codecov-action@v3
         with:
-          file: ./coverage.lcov
+          file: ${{ env.REPO_PATH }}/coverage.lcov
