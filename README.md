@@ -1,3 +1,5 @@
+<!-- panvimdoc-ignore-start -->
+
 # template-ddu
 
 <!-- deno-fmt-ignore-start -->
@@ -9,5 +11,7 @@
 ![neovim/neovim](https://img.shields.io/badge/Neovim-stable-informational?logo=neovim)
 
 <!-- deno-fmt-ignore-end -->
+
+<!-- panvimdoc-ignore-end -->
 
 A template for modules of [ddu.vim](https://github.com/Shougo/ddu.vim).
