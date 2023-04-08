@@ -10,6 +10,10 @@ on:
   workflow_call:
   workflow_dispatch:
 
+env:
+  REPO_PATH: "${{ github.workspace }}/${{ github.repository }}"
+  DENOPS_PATH: "${{ github.workspace }}/denops.vim"
+
 jobs:
   test:
     name: Test
@@ -17,32 +21,60 @@ jobs:
     strategy:
       matrix:
         os: [ ubuntu-latest, macos-latest, windows-latest ]
-        zig_ver: [ master, 0.10.1 ] # @denopendabot ziglang/zig
 
     runs-on: ${{ matrix.os }}
 
     steps:
-      - name: Setup Zig
-        uses: goto-bus-stop/setup-zig@v2
+      - name: Checkout
+        uses: actions/checkout@v3
         with:
-          version: ${{ matrix.zig_ver }}
+          path: ${{ env.REPO_PATH }}
 
       - name: Setup Deno
         uses: denoland/setup-deno@v1
         with:
           deno-version: v1.32.3 # @denopendabot denoland/deno
 
-      - name: Checkout
+      - name: Checkout denops.vim
         uses: actions/checkout@v3
+        with:
+          repository: "vim-denops/denops.vim"
+          path: ${{ env.DENOPS_PATH }}
 
-      - name: Cache
-        run: deno cache build.ts libzf.ts
+      - name: Setup Vim
+        uses: rhysd/action-setup-vim@v1.2.15
+        id: vim
+        with:
+          version: stable
 
-      - name: Build
-        run: deno task build
+      - name: Setup Neovim
+        uses: rhysd/action-setup-vim@v1.2.15
+        id: nvim
+        with:
+          neovim: true
+          version: stable
+
+      - name: Check Vim & Neovim
+        run: |
+          echo ${DENOPS_TEST_VIM}
+          ${DENOPS_TEST_VIM} --version
+          echo ${DENOPS_TEST_NVIM}
+          ${DENOPS_TEST_NVIM} --version
+        env:
+          DENOPS_TEST_VIM: ${{ steps.vim.outputs.executable }}
+          DENOPS_TEST_NVIM: ${{ steps.nvim.outputs.executable }}
+
+      - name: Cache dependencies
+        run: git ls-files | grep -F .ts | xargs -i deno cache {}
 
       - name: Test
         run: deno task test --coverage=./coverage
+        env:
+          DENOPS_TEST_VIM: ${{ steps.vim.outputs.executable }}
+          DENOPS_TEST_NVIM: ${{ steps.nvim.outputs.executable }}
+          DENOPS_TEST_DENOPS_PATH: ${{ env.DENOPS_PATH }}
+        timeout-minutes: 5
+        working-directory: ${{ env.REPO_PATH }}
 
       - name: Create coverage report
         run: deno coverage ./coverage --lcov > ./coverage.lcov
