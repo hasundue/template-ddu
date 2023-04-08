@@ -69,7 +69,7 @@ jobs:
           DENOPS_TEST_NVIM: ${{ steps.nvim.outputs.executable }}
 
       - name: Cache dependencies
-        run: git ls-files | grep -F .ts | xargs -I deno cache {}
+        run: git ls-files | grep -F .ts | xargs -I {} deno cache {}
         working-directory: ${{ env.REPO_PATH }}
 
       - name: Test
