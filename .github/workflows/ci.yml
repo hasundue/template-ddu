@@ -18,11 +18,13 @@ jobs:
 
   doc:
     name: Docgen
-    needs: test
+    needs: check
     uses: ./.github/workflows/docgen.yml
 
   release:
     name: Release
-    needs: doc
+    needs: 
+      - test
+      - doc
     uses: ./.github/workflows/release.yml
     secrets: inherit
